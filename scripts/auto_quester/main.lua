@@ -8,12 +8,13 @@ local menu_elements = {
     enable_plugin = checkbox:new(false, get_hash("auto_quester_enable")),
     mode_selector = combo_box:new(0, get_hash("auto_quester_mode")),
     quest_selector = combo_box:new(0, get_hash("auto_quester_quest_sel")),
+    refresh_btn = button:new(get_hash("auto_quester_refresh_btn")),
 
     -- Recorder Controls
     rec_record_btn = button:new(get_hash("auto_quester_rec_btn")),
     rec_next_btn = button:new(get_hash("auto_quester_next_btn")),
     rec_prev_btn = button:new(get_hash("auto_quester_prev_btn")),
-    rec_save_btn = button:new(get_hash("auto_quester_save_btn")), -- Renamed/Repurposed
+    rec_save_btn = button:new(get_hash("auto_quester_save_btn")),
     rec_type_move = button:new(get_hash("auto_quester_type_move")),
     rec_type_interact = button:new(get_hash("auto_quester_type_interact")),
 
@@ -23,34 +24,70 @@ local menu_elements = {
 
 local quest_list = {}
 local quest_keys = {}
-for k, _ in pairs(quests) do
-    table.insert(quest_keys, k)
-    table.insert(quest_list, k)
+
+local function refresh_quest_list()
+    -- Reload the quest database from file (if updated)
+    -- Since Lua caches `require`, we might need to manually reload `quest_db` or just re-read the variable.
+    -- Assuming `quest_db` is the live table:
+
+    -- If we saved new files, `quest_db` logic to load 'my_recorded_quests' only ran on first require.
+    -- To properly refresh, we should re-run the merge logic.
+
+    local status, my_quests = pcall(require, "scripts.auto_quester.my_recorded_quests")
+    if status and my_quests then
+        -- Force package reload hack? No, safe way: just merge again.
+        -- Actually, `require` is cached. To reload:
+        package.loaded["scripts.auto_quester.my_recorded_quests"] = nil
+        status, my_quests = pcall(require, "scripts.auto_quester.my_recorded_quests")
+        if status and my_quests then
+            for k, v in pairs(my_quests) do
+                quests[k] = v
+            end
+        end
+    end
+
+    quest_list = {}
+    quest_keys = {}
+    for k, _ in pairs(quests) do
+        table.insert(quest_keys, k)
+        table.insert(quest_list, k)
+    end
+    console.print("Quest list refreshed.")
 end
+
+-- Init list
+refresh_quest_list()
 
 on_render_menu(function()
     if menu_elements.main_tree:push("Auto Quester") then
         menu_elements.enable_plugin:render("Enable Plugin", "Toggle to enable or disable the quester.")
 
-        -- Update Tracker Active State based on checkbox
         if menu_elements.enable_plugin:get() then
             tracker.is_active = true
         else
             tracker.is_active = false
         end
 
-        local modes = {"RUNNER", "RECORDER"}
+        local modes = {"RUNNER", "RECORDER", "AUTO_RECORDER"}
         menu_elements.mode_selector:render("Mode", modes, "Select mode.")
         tracker.mode = modes[menu_elements.mode_selector:get() + 1]
 
-        -- Quest Selector
-        -- Refresh quest list if needed (e.g., after save/load), though usually requires reload.
-        -- For now, simple list.
-        menu_elements.quest_selector:render("Select Quest", quest_list, "Choose which quest to run or record.")
-        local selected_quest = quest_keys[menu_elements.quest_selector:get() + 1]
+        if tracker.mode ~= "AUTO_RECORDER" then
+             menu_elements.quest_selector:render("Select Quest", quest_list, "Choose which quest to run or record.")
 
-        if selected_quest ~= tracker.current_quest_name then
-            tracker.set_quest(selected_quest)
+             menu_elements.refresh_btn:render("Refresh List", "Reload quest list from file.", 0.1)
+             if menu_elements.refresh_btn:get() then
+                 refresh_quest_list()
+             end
+
+            local selected_quest = quest_keys[menu_elements.quest_selector:get() + 1]
+
+            if selected_quest and selected_quest ~= tracker.current_quest_name then
+                tracker.set_quest(selected_quest)
+            end
+        else
+            graphics.text_2d("Mode: Auto-Recorder (Passive)", vec2:new(10, 300), 20, color_white(255))
+            graphics.text_2d("Will auto-record new quests.", vec2:new(10, 320), 20, color_white(255))
         end
 
         if tracker.mode == "RECORDER" then
@@ -85,27 +122,16 @@ on_render_menu(function()
             menu_elements.rec_save_btn:render("Save to File", "Save recorded steps to scripts/auto_quester/my_recorded_quests.lua", 0.1)
             if menu_elements.rec_save_btn:get() then
                 recorder.save_to_file()
+                refresh_quest_list() -- Auto refresh after save
             end
 
-            -- Display current step info
-            local quest = quests[selected_quest]
-            -- Check recorded data first for display? The recorder module stores it separately until save.
-            -- But we can't easily access it here without getter.
-            -- Actually, simpler to look at db if we aren't displaying live edits.
-            -- But user wants to see live edits.
-            -- Ideally recorder should expose current step data.
-            -- For MVP, we just show generic info.
-
+            local quest = quests[tracker.current_quest_name]
             if quest and quest.steps[tracker.current_step_index] then
                 local s = quest.steps[tracker.current_step_index]
                 graphics.text_2d("Current Step: " .. s.index, vec2:new(10, 300), 20, color_white(255))
                 graphics.text_2d("Desc: " .. s.description, vec2:new(10, 320), 20, color_white(255))
                 graphics.text_2d("Type: " .. s.type, vec2:new(10, 340), 20, color_white(255))
             end
-        else
-            -- Runner Mode Info
-            graphics.text_2d("Running Quest: " .. tracker.current_quest_name, vec2:new(10, 300), 20, color_white(255))
-            graphics.text_2d("Step: " .. tracker.current_step_index, vec2:new(10, 320), 20, color_white(255))
         end
 
         menu_elements.main_tree:pop()
@@ -113,14 +139,18 @@ on_render_menu(function()
 end)
 
 on_update(function()
-    if tracker.is_active and tracker.mode == "RUNNER" then
+    if not tracker.is_active then return end
+
+    if tracker.mode == "RUNNER" then
         executor.execute_step()
+    elseif tracker.mode == "AUTO_RECORDER" then
+        tracker.update_quest_list() -- Poll for new quests
+        recorder.tick() -- Record path
     end
 end)
 
 on_render(function()
     if tracker.is_active and tracker.mode == "RUNNER" then
-        -- Optional: Draw debug lines to target
         local quest = quests[tracker.current_quest_name]
         if quest then
             local step = quest.steps[tracker.current_step_index]
