@@ -26,17 +26,8 @@ local quest_list = {}
 local quest_keys = {}
 
 local function refresh_quest_list()
-    -- Reload the quest database from file (if updated)
-    -- Since Lua caches `require`, we might need to manually reload `quest_db` or just re-read the variable.
-    -- Assuming `quest_db` is the live table:
-
-    -- If we saved new files, `quest_db` logic to load 'my_recorded_quests' only ran on first require.
-    -- To properly refresh, we should re-run the merge logic.
-
     local status, my_quests = pcall(require, "scripts.auto_quester.my_recorded_quests")
     if status and my_quests then
-        -- Force package reload hack? No, safe way: just merge again.
-        -- Actually, `require` is cached. To reload:
         package.loaded["scripts.auto_quester.my_recorded_quests"] = nil
         status, my_quests = pcall(require, "scripts.auto_quester.my_recorded_quests")
         if status and my_quests then
@@ -68,11 +59,11 @@ on_render_menu(function()
             tracker.is_active = false
         end
 
-        local modes = {"RUNNER", "RECORDER", "AUTO_RECORDER"}
+        local modes = {"RUNNER", "RECORDER", "AUTO_RECORDER", "AUTO_RUNNER"}
         menu_elements.mode_selector:render("Mode", modes, "Select mode.")
         tracker.mode = modes[menu_elements.mode_selector:get() + 1]
 
-        if tracker.mode ~= "AUTO_RECORDER" then
+        if tracker.mode == "RUNNER" or tracker.mode == "RECORDER" then
              menu_elements.quest_selector:render("Select Quest", quest_list, "Choose which quest to run or record.")
 
              menu_elements.refresh_btn:render("Refresh List", "Reload quest list from file.", 0.1)
@@ -85,9 +76,16 @@ on_render_menu(function()
             if selected_quest and selected_quest ~= tracker.current_quest_name then
                 tracker.set_quest(selected_quest)
             end
-        else
+        elseif tracker.mode == "AUTO_RECORDER" then
             graphics.text_2d("Mode: Auto-Recorder (Passive)", vec2:new(10, 300), 20, color_white(255))
             graphics.text_2d("Will auto-record new quests.", vec2:new(10, 320), 20, color_white(255))
+        elseif tracker.mode == "AUTO_RUNNER" then
+            graphics.text_2d("Mode: Auto-Runner (Auto-Pilot)", vec2:new(10, 300), 20, color_white(255))
+            graphics.text_2d("Will auto-execute recorded active quests.", vec2:new(10, 320), 20, color_white(255))
+            -- Show active quests being tracked
+            for i, q in ipairs(tracker.active_quests) do
+                 graphics.text_2d("- " .. q, vec2:new(10, 340 + (i*20)), 15, color_gold(255))
+            end
         end
 
         if tracker.mode == "RECORDER" then
@@ -122,7 +120,7 @@ on_render_menu(function()
             menu_elements.rec_save_btn:render("Save to File", "Save recorded steps to scripts/auto_quester/my_recorded_quests.lua", 0.1)
             if menu_elements.rec_save_btn:get() then
                 recorder.save_to_file()
-                refresh_quest_list() -- Auto refresh after save
+                refresh_quest_list()
             end
 
             local quest = quests[tracker.current_quest_name]
@@ -144,13 +142,34 @@ on_update(function()
     if tracker.mode == "RUNNER" then
         executor.execute_step()
     elseif tracker.mode == "AUTO_RECORDER" then
-        tracker.update_quest_list() -- Poll for new quests
-        recorder.tick() -- Record path
+        tracker.update_quest_list()
+        recorder.tick()
+    elseif tracker.mode == "AUTO_RUNNER" then
+        tracker.update_quest_list()
+        -- Auto-Pilot Logic:
+        -- Iterate active quests, see if we have a script, and run it.
+        -- Limitation: This just runs the *first* matching quest it finds.
+        for _, q_name in ipairs(tracker.active_quests) do
+            if quests[q_name] then
+                -- For now, we reuse the global step index from tracker?
+                -- Ideally, we need per-quest state.
+                -- Current limitation: 'tracker' only stores ONE step index.
+                -- So Auto-Runner only works well for ONE quest at a time.
+                -- We'll just run the current quest if it matches the active one.
+
+                if tracker.current_quest_name ~= q_name then
+                    tracker.set_quest(q_name) -- Switch context to this quest
+                end
+
+                executor.execute_step() -- Execute based on current context
+                break -- Only run one quest at a time
+            end
+        end
     end
 end)
 
 on_render(function()
-    if tracker.is_active and tracker.mode == "RUNNER" then
+    if tracker.is_active and (tracker.mode == "RUNNER" or tracker.mode == "AUTO_RUNNER") then
         local quest = quests[tracker.current_quest_name]
         if quest then
             local step = quest.steps[tracker.current_step_index]

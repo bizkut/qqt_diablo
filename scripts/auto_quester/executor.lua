@@ -23,36 +23,51 @@ local function get_actor_by_name(name)
 end
 
 function executor.execute_step()
+    -- Default to tracking the globally selected quest
     if not tracker.is_active or tracker.mode ~= "RUNNER" then return end
 
     local quest = quests[tracker.current_quest_name]
+    executor.run_quest_logic(quest, tracker.current_step_index)
+end
+
+function executor.execute_auto(quest_name, step_index)
+    local quest = quests[quest_name]
+    if quest then
+        executor.run_quest_logic(quest, step_index)
+    end
+end
+
+function executor.run_quest_logic(quest, step_index)
     if not quest then
-        console.print("Quest not found in DB: " .. tostring(tracker.current_quest_name))
+        console.print("Quest data not found.")
         return
     end
 
-    local step = quest.steps[tracker.current_step_index]
+    local step = quest.steps[step_index]
     if not step then
         console.print("Quest Complete or Invalid Step")
-        tracker.is_active = false
+        -- In auto mode, maybe we mark it done? For now just stop.
+        if tracker.mode == "RUNNER" then
+            tracker.is_active = false
+        end
         return
     end
 
     local player_pos = get_player_position()
     local target_pos = step.pos
-    -- Safety check for nil/placeholder pos
+
+    -- Safety check/Dynamic Actor Search
     if not target_pos or (target_pos:x() == 0 and target_pos:y() == 0) then
-         -- If it's an Interact step, try to find the actor dynamically if pos is missing
         if step.type == "Interact" and step.target_name then
              local actor = get_actor_by_name(step.target_name)
              if actor then
                  target_pos = actor:get_position()
              else
-                 console.print("Step " .. step.index .. ": Missing coordinates and Actor not found.")
+                 console.print("Step " .. step.index .. ": Waiting for Actor " .. step.target_name)
                  return
              end
         else
-             console.print("Step " .. step.index .. ": Coordinates are invalid (0,0,0). Please Record them first.")
+             console.print("Step " .. step.index .. ": Invalid Coordinates")
              return
         end
     end
@@ -76,7 +91,6 @@ function executor.execute_step()
             if actor then
                 if loot_manager.interact_with_object(actor) then
                     console.print("Interacted with " .. step.target_name)
-                    -- Wait a bit before advancing? (handled by next frame updates usually)
                     tracker.advance_step()
                 end
             else
