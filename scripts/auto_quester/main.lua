@@ -46,7 +46,6 @@ local function refresh_quest_list()
     console.print("Quest list refreshed.")
 end
 
--- Init list
 refresh_quest_list()
 
 on_render_menu(function()
@@ -81,8 +80,8 @@ on_render_menu(function()
             graphics.text_2d("Will auto-record new quests.", vec2:new(10, 320), 20, color_white(255))
         elseif tracker.mode == "AUTO_RUNNER" then
             graphics.text_2d("Mode: Auto-Runner (Auto-Pilot)", vec2:new(10, 300), 20, color_white(255))
-            graphics.text_2d("Will auto-execute recorded active quests.", vec2:new(10, 320), 20, color_white(255))
-            -- Show active quests being tracked
+            graphics.text_2d("Running Quest: " .. tracker.current_quest_name, vec2:new(10, 320), 20, color_white(255))
+
             for i, q in ipairs(tracker.active_quests) do
                  graphics.text_2d("- " .. q, vec2:new(10, 340 + (i*20)), 15, color_gold(255))
             end
@@ -139,30 +138,39 @@ end)
 on_update(function()
     if not tracker.is_active then return end
 
+    -- Global: Always scan NPCs if enabled
+    recorder.tick_npc()
+
     if tracker.mode == "RUNNER" then
         executor.execute_step()
     elseif tracker.mode == "AUTO_RECORDER" then
         tracker.update_quest_list()
-        recorder.tick()
+        recorder.tick_path()
     elseif tracker.mode == "AUTO_RUNNER" then
         tracker.update_quest_list()
-        -- Auto-Pilot Logic:
-        -- Iterate active quests, see if we have a script, and run it.
-        -- Limitation: This just runs the *first* matching quest it finds.
+
+        -- Logic: Stick to current quest if it's active.
+        -- If current is not active, find a new one.
+        local current_is_active = false
         for _, q_name in ipairs(tracker.active_quests) do
-            if quests[q_name] then
-                -- For now, we reuse the global step index from tracker?
-                -- Ideally, we need per-quest state.
-                -- Current limitation: 'tracker' only stores ONE step index.
-                -- So Auto-Runner only works well for ONE quest at a time.
-                -- We'll just run the current quest if it matches the active one.
+            if q_name == tracker.current_quest_name then
+                current_is_active = true
+                break
+            end
+        end
 
-                if tracker.current_quest_name ~= q_name then
-                    tracker.set_quest(q_name) -- Switch context to this quest
+        if current_is_active then
+            -- Continue running
+            executor.execute_step()
+        else
+            -- Find new quest
+            for _, q_name in ipairs(tracker.active_quests) do
+                if quests[q_name] then
+                    tracker.set_quest(q_name)
+                    console.print("Auto-Runner: Switched to quest " .. q_name)
+                    executor.execute_step()
+                    break
                 end
-
-                executor.execute_step() -- Execute based on current context
-                break -- Only run one quest at a time
             end
         end
     end

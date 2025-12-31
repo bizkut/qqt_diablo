@@ -1,5 +1,6 @@
 local recorder = {}
 local quests = require("scripts.auto_quester.quest_db")
+local npc_manager = require("scripts.auto_quester.npc_db_manager")
 
 -- Temporary storage for recorded steps
 local recorded_data = {}
@@ -8,11 +9,10 @@ local recording_quest_name = nil
 local last_record_pos = nil
 local record_threshold = 2.0 -- Meters
 
--- Load existing recordings on init to prevent data loss
+-- Load existing recordings on init
 local status, my_quests = pcall(require, "scripts.auto_quester.my_recorded_quests")
 if status and my_quests then
     for k, v in pairs(my_quests) do
-        -- We store a deep copy of the steps structure
         recorded_data[k] = {}
         for _, step in ipairs(v.steps) do
             table.insert(recorded_data[k], {
@@ -29,7 +29,6 @@ end
 
 function recorder.init_recording(quest_name)
     if not recorded_data[quest_name] then
-        -- Deep copy existing steps from hardcoded DB or init new
         recorded_data[quest_name] = {}
         if quests[quest_name] and not is_recording then
             for i, step in ipairs(quests[quest_name].steps) do
@@ -48,37 +47,26 @@ end
 
 -- --- Auto Recording Functions ---
 function recorder.start_auto_recording(quest_name)
-    -- If already recording another quest, we might want to stop that one first?
-    -- Or just switch context. Let's switch.
     if is_recording and recording_quest_name ~= quest_name then
-        console.print("Switching Auto-Record from " .. tostring(recording_quest_name) .. " to " .. quest_name)
-        recorder.save_to_file() -- Save previous work before switching
+        recorder.save_to_file()
     end
 
     is_recording = true
     recording_quest_name = quest_name
-
-    -- If we already have data for this quest, do we overwrite or append?
-    -- For "Auto-Recorder", assuming a fresh start is safer to avoid duplicates.
     recorded_data[quest_name] = {}
 
     last_record_pos = get_player_position()
-
     console.print(">>> Auto-Recorder STARTED for: " .. quest_name)
-    -- Record initial point
     recorder.add_step(quest_name, "Move", last_record_pos, "Start of Quest")
 end
 
 function recorder.stop_auto_recording(target_quest_name)
-    -- Only stop if we are actually recording the quest that finished
     if is_recording and recording_quest_name then
         if target_quest_name and target_quest_name ~= recording_quest_name then
-            -- A different quest finished (background quest), ignore it
             return
         end
-
         console.print(">>> Auto-Recorder STOPPED for: " .. recording_quest_name)
-        recorder.save_to_file() -- Auto-save on completion
+        recorder.save_to_file()
         is_recording = false
         recording_quest_name = nil
         last_record_pos = nil
@@ -99,12 +87,33 @@ function recorder.add_step(quest_name, type_name, pos, desc)
     })
 end
 
-function recorder.tick()
+local last_npc_scan = 0
+local npc_scan_interval = 1.0
+
+function recorder.tick_npc()
+    local current_time = os.clock()
+    if current_time - last_npc_scan > npc_scan_interval then
+        local actors = actors_manager.get_all_actors()
+        for _, actor in ipairs(actors) do
+            -- Check if interactable (NPC, Object, etc.)
+            -- Using loot_manager check or class check could be better but is_interactable is fine if available
+            -- If is_interactable method exists:
+            if actor.is_interactable and actor:is_interactable() then
+                local name = actor:get_skin_name()
+                if name and name ~= "" then
+                    npc_manager.update_npc(name, actor:get_position())
+                end
+            end
+        end
+        last_npc_scan = current_time
+    end
+end
+
+function recorder.tick_path()
     if not is_recording or not recording_quest_name then return end
 
     local current_pos = get_player_position()
     if not last_record_pos then last_record_pos = current_pos end
-
     local dist = current_pos:dist_to_ignore_z(last_record_pos)
 
     if dist >= record_threshold then
@@ -113,12 +122,16 @@ function recorder.tick()
     end
 end
 
+-- Backwards compatibility if called directly
+function recorder.tick()
+    recorder.tick_npc()
+    recorder.tick_path()
+end
+
 -- --- Manual Functions ---
 
 function recorder.record_current_step_pos()
-    -- Lazy load tracker to avoid circular dependency
     local tracker = require("scripts.auto_quester.tracker")
-
     local quest_name = tracker.current_quest_name
     recorder.init_recording(quest_name)
 
@@ -140,9 +153,7 @@ function recorder.record_current_step_pos()
 end
 
 function recorder.set_step_type(type_name)
-    -- Lazy load tracker to avoid circular dependency
     local tracker = require("scripts.auto_quester.tracker")
-
     local quest_name = tracker.current_quest_name
     recorder.init_recording(quest_name)
     local steps = recorded_data[quest_name]
@@ -172,8 +183,6 @@ end
 
 function recorder.save_to_file()
     local file_path = "scripts/auto_quester/my_recorded_quests.lua"
-
-    -- Now safe to overwrite because `recorded_data` was initialized with the file's content
     local file = io.open(file_path, "w")
     if not file then
         console.print("Error: Could not open file for writing: " .. file_path)
