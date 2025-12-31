@@ -13,7 +13,7 @@ local quests = {
         name = "Darkness Within",
         steps = {
             { index = 1, description = "Enter Icehowl Ruins.", type = "Interact", target_name = "Icehowl Ruins", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
-            { index = 2, description = "Search the depths.", type = "Move", target_name = "Decapitated Priest", pos = vec3:new(0, 0, 0), range_threshold = 20.0 }, -- Move towards boss trigger
+            { index = 2, description = "Search the depths.", type = "Move", target_name = "Decapitated Priest", pos = vec3:new(0, 0, 0), range_threshold = 20.0 },
             { index = 3, description = "Slay X'Fal.", type = "Interact", target_name = "Decapitated Priest", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
         }
     },
@@ -266,12 +266,10 @@ local quests = {
     ["Dark Omens"] = {
         name = "Dark Omens",
         steps = {
-            { index = 1, description = "Investigate the disturbance at Firebreak Manor.", type = "Move", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
-            { index = 2, description = "Talk to Steward Wilfred.", type = "Interact", target_name = "Steward Wilfred", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
-            { index = 3, description = "Enter Donan's Study.", type = "Interact", target_name = "Donan's Study", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
-            { index = 4, description = "Inspect blood petals.", type = "Interact", target_name = "Blood Petals", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
-            { index = 5, description = "Defeat goatmen attackers.", type = "Move", pos = vec3:new(0, 0, 0), range_threshold = 5.0 },
-            { index = 6, description = "Talk to Donan.", type = "Interact", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+            { index = 1, description = "Talk to Steward Wilfred.", type = "Interact", target_name = "Steward Wilfred", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 2, description = "Enter Donan's Study.", type = "Interact", target_name = "Donan's Study", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Inspect blood petals.", type = "Interact", target_name = "Blood Petals", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 4, description = "Talk to Donan.", type = "Interact", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
         }
     },
     ["Encroaching Shadows"] = {
@@ -519,6 +517,339 @@ local quests = {
         name = "Exhumed Relics",
         steps = {
             { index = 1, description = "Return to Chapel.", type = "Move", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Lorath.", type = "Interact", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+
+    -- ACT 4: A Gathering Storm
+    ["Prying the Eye"] = {
+        name = "Prying the Eye",
+        steps = {
+            { index = 1, description = "Speak with Taissa.", type = "Interact", target_name = "Taissa", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 2, description = "Grab Sightless Eye.", type = "Interact", target_name = "Sightless Eye", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Place Eye on Pedestal.", type = "Interact", target_name = "Pedestal", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 4, description = "Interact with Eye.", type = "Interact", target_name = "Sightless Eye", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["A Master's Touch"] = {
+        name = "A Master's Touch",
+        steps = {
+            { index = 1, description = "Go to Kyovashad.", type = "Move", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Donan.", type = "Interact", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Lost Arts"] = {
+        name = "Lost Arts",
+        steps = {
+            { index = 1, description = "Go to Horadric Vault.", type = "Move", target_name = "Neyrelle", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Neyrelle.", type = "Interact", target_name = "Neyrelle", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Find Donan.", type = "Move", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 5.0 },
+            { index = 4, description = "Speak with Donan.", type = "Interact", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["A Meeting of the Minds"] = {
+        name = "A Meeting of the Minds",
+        steps = {
+            { index = 1, description = "Go to Forsaken Chapel.", type = "Move", target_name = "Neyrelle", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Neyrelle.", type = "Interact", target_name = "Neyrelle", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Anguish Incarnate"] = {
+        name = "Anguish Incarnate",
+        steps = {
+            { index = 1, description = "Defeat Andariel.", type = "Interact", target_name = "Andariel", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Eye of the Storm"] = {
+        name = "Eye of the Storm",
+        steps = {
+            { index = 1, description = "Speak with Lorath.", type = "Interact", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+
+    -- ACT 5: Secrets Bartered, Fates Sold
+    ["The Path Divided"] = {
+        name = "The Path Divided",
+        steps = {
+            { index = 1, description = "Go to Zarbinzet.", type = "Move", target_name = "Taissa", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Taissa.", type = "Interact", target_name = "Taissa", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Speak with Donan.", type = "Interact", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Secrets of the Zakarum"] = {
+        name = "Secrets of the Zakarum",
+        steps = {
+            { index = 1, description = "Go to Ruins of Rakhat Keep.", type = "Move", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Donan.", type = "Interact", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Enter Inner Court.", type = "Move", target_name = "Inner Court", pos = vec3:new(0, 0, 0), range_threshold = 5.0 },
+            { index = 4, description = "Follow Donan.", type = "Move", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 5.0 }
+        }
+    },
+    ["Entombed Hatred"] = {
+        name = "Entombed Hatred",
+        steps = {
+            { index = 1, description = "Enter Black Tomb.", type = "Move", target_name = "Black Tomb", pos = vec3:new(0, 0, 0), range_threshold = 5.0 },
+            { index = 2, description = "Perform Ritual.", type = "Interact", target_name = "Ritual", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Speak with Donan.", type = "Interact", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Swamp Hospitality"] = {
+        name = "Swamp Hospitality",
+        steps = {
+            { index = 1, description = "Go to Wejinhani.", type = "Move", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Find Witch's Tower.", type = "Move", target_name = "Witch", pos = vec3:new(0, 0, 0), range_threshold = 5.0 },
+            { index = 3, description = "Speak with Witch.", type = "Interact", target_name = "Witch", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Witch of the Wastes"] = {
+        name = "Witch of the Wastes",
+        steps = {
+            { index = 1, description = "Find Valtha.", type = "Move", target_name = "Valtha", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Defeat Valtha.", type = "Interact", target_name = "Valtha", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Collect Quicksilver.", type = "Interact", target_name = "Quicksilver", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 4, description = "Return to Witch.", type = "Interact", target_name = "Witch", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Encumbered Mind"] = {
+        name = "Encumbered Mind",
+        steps = {
+            { index = 1, description = "Mix Quicksilver.", type = "Interact", target_name = "Quicksilver", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 2, description = "Turn Wheel.", type = "Interact", target_name = "Wheel", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Grind Sulfur.", type = "Interact", target_name = "Sulfur", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 4, description = "Speak with Witch.", type = "Interact", target_name = "Witch", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["The Cage of Grief"] = {
+        name = "The Cage of Grief",
+        steps = {
+            { index = 1, description = "Go to Hungering Swamp.", type = "Move", target_name = "Ritual Site", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Find Yellow Lotus.", type = "Interact", target_name = "Yellow Lotus", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Find Maggot Ichor.", type = "Interact", target_name = "Maggot Ichor", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 4, description = "Perform Ritual.", type = "Interact", target_name = "Bowl", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 5, description = "Enter Portal.", type = "Interact", target_name = "Portal", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["One Step Forward"] = {
+        name = "One Step Forward",
+        steps = {
+            { index = 1, description = "Speak with Witch.", type = "Interact", target_name = "Witch", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 2, description = "Speak with Donan.", type = "Interact", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Tainted Flesh"] = {
+        name = "Tainted Flesh",
+        steps = {
+            { index = 1, description = "Find Lorath.", type = "Move", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Lorath.", type = "Interact", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Speak with Timue.", type = "Interact", target_name = "Timue", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Wrack & Ruin"] = {
+        name = "Wrack & Ruin",
+        steps = {
+            { index = 1, description = "Find Yngovani.", type = "Move", target_name = "Serpent Door", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Find Left Eye.", type = "Interact", target_name = "Left Eye", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Find Right Eye.", type = "Interact", target_name = "Right Eye", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 4, description = "Open Serpent Door.", type = "Interact", target_name = "Serpent Door", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Cold Blood"] = {
+        name = "Cold Blood",
+        steps = {
+            { index = 1, description = "Enter Slithering Dark.", type = "Move", target_name = "Mohlon", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Defeat Mohlon.", type = "Interact", target_name = "Mohlon", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Take Incense.", type = "Interact", target_name = "Incense", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 4, description = "Speak with Lorath.", type = "Interact", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Judgment of the Swamp"] = {
+        name = "Judgment of the Swamp",
+        steps = {
+            { index = 1, description = "Go to Altar.", type = "Move", target_name = "Bloodstained Altar", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Light Incense.", type = "Interact", target_name = "Bloodstained Altar", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["The Serpentine Path"] = {
+        name = "The Serpentine Path",
+        steps = {
+            { index = 1, description = "Follow Serpent.", type = "Move", target_name = "Serpent", pos = vec3:new(0, 0, 0), range_threshold = 5.0 },
+            { index = 2, description = "Wait for Ladder.", type = "Move", target_name = "Neyrelle", pos = vec3:new(0, 0, 0), range_threshold = 5.0 }
+        }
+    },
+    ["Dirge of the Mire"] = {
+        name = "Dirge of the Mire",
+        steps = {
+            { index = 1, description = "Follow Serpent.", type = "Move", target_name = "Serpent", pos = vec3:new(0, 0, 0), range_threshold = 5.0 },
+            { index = 2, description = "Wound Serpent.", type = "Interact", target_name = "Serpent", pos = vec3:new(0, 0, 0), range_threshold = 5.0 }
+        }
+    },
+    ["The Slow, Beating Heart"] = {
+        name = "The Slow, Beating Heart",
+        steps = {
+            { index = 1, description = "Ride Serpent.", type = "Interact", target_name = "Serpent", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 2, description = "Arrive at Tree of Whispers.", type = "Move", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 3, description = "Speak with Lorath.", type = "Interact", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["A Cold and Lifeless Shore"] = {
+        name = "A Cold and Lifeless Shore",
+        steps = {
+            { index = 1, description = "Go to Backwater.", type = "Move", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Lorath.", type = "Interact", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Find Coffin.", type = "Move", target_name = "Coffin", pos = vec3:new(0, 0, 0), range_threshold = 10.0 }
+        }
+    },
+    ["Picking Through the Bones"] = {
+        name = "Picking Through the Bones",
+        steps = {
+            { index = 1, description = "Enter Shipwreck.", type = "Move", target_name = "Coffin", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Interact with Coffin.", type = "Interact", target_name = "Coffin", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Beneath the Wine-Dark Sea"] = {
+        name = "Beneath the Wine-Dark Sea",
+        steps = {
+            { index = 1, description = "Find Echo of Elias.", type = "Move", target_name = "Echo of Elias", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Interact with Echo.", type = "Interact", target_name = "Echo of Elias", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Take Elias's Finger.", type = "Interact", target_name = "Finger", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Fragments of Mortality"] = {
+        name = "Fragments of Mortality",
+        steps = {
+            { index = 1, description = "Speak with Lorath.", type = "Interact", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 2, description = "Burn Finger.", type = "Interact", target_name = "Fire", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["On the Precipice"] = {
+        name = "On the Precipice",
+        steps = {
+            { index = 1, description = "Go to Zakarum Keep.", type = "Move", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Donan.", type = "Interact", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Enter Black Tomb.", type = "Move", target_name = "Elias", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 4, description = "Defeat Elias.", type = "Interact", target_name = "Elias", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Knee-Deep in Faith"] = {
+        name = "Knee-Deep in Faith",
+        steps = {
+            { index = 1, description = "Find Elias.", type = "Move", target_name = "Elias", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Defeat Elias.", type = "Interact", target_name = "Elias", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["A Chorus of Voices"] = {
+        name = "A Chorus of Voices",
+        steps = {
+            { index = 1, description = "Return to Tree of Whispers.", type = "Move", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Lorath.", type = "Interact", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+
+    -- ACT 6: Dance of the Makers
+    ["Evil Stirs in Kehjistan"] = {
+        name = "Evil Stirs in Kehjistan",
+        steps = {
+            { index = 1, description = "Go to Tarsarak.", type = "Move", target_name = "Neyrelle", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Neyrelle.", type = "Interact", target_name = "Neyrelle", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["The Jewel of the East"] = {
+        name = "The Jewel of the East",
+        steps = {
+            { index = 1, description = "Go to Caldeum Bazaar.", type = "Move", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Donan.", type = "Interact", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["The Search for Lilith Begins"] = {
+        name = "The Search for Lilith Begins",
+        steps = {
+            { index = 1, description = "Interact with Heavy Gate.", type = "Interact", target_name = "Heavy Gate", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 2, description = "Speak with Lorath.", type = "Interact", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Find Prava.", type = "Move", target_name = "Prava", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 4, description = "Speak with Prava.", type = "Interact", target_name = "Prava", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["The Scouring of Caldeum"] = {
+        name = "The Scouring of Caldeum",
+        steps = {
+            { index = 1, description = "Escort Allies.", type = "Move", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Defeat Uznu.", type = "Interact", target_name = "Uznu", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Open Gate.", type = "Interact", target_name = "Gate Winch", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["The Walls Shake"] = {
+        name = "The Walls Shake",
+        steps = {
+            { index = 1, description = "Enter Foul Cistern.", type = "Move", target_name = "Duriel", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Defeat Duriel.", type = "Interact", target_name = "Duriel", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Turning the Tide"] = {
+        name = "Turning the Tide",
+        steps = {
+            { index = 1, description = "Enter Imperial Palace.", type = "Move", target_name = "Neyrelle", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Enter Gates of Hell.", type = "Interact", target_name = "Gate of Hell", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Essence of Hatred"] = {
+        name = "Essence of Hatred",
+        steps = {
+            { index = 1, description = "Go to Burning Overpass.", type = "Move", target_name = "Prava", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Prava.", type = "Interact", target_name = "Prava", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["In Desolation's Wake"] = {
+        name = "In Desolation's Wake",
+        steps = {
+            { index = 1, description = "Speak with Donan.", type = "Interact", target_name = "Donan", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 2, description = "Defeat Ninsa.", type = "Interact", target_name = "Ninsa", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Defeat Karum.", type = "Interact", target_name = "Karum", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 4, description = "Defeat Ashava.", type = "Interact", target_name = "Ashava", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Light Extinguished"] = {
+        name = "Light Extinguished",
+        steps = {
+            { index = 1, description = "Enter Molted Span.", type = "Move", target_name = "Neyrelle", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Speak with Neyrelle.", type = "Interact", target_name = "Neyrelle", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["The Blind Eye"] = {
+        name = "The Blind Eye",
+        steps = {
+            { index = 1, description = "Use Sightless Eye.", type = "Interact", target_name = "Sightless Eye", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 2, description = "Find Lilith's Altar.", type = "Move", target_name = "Lilith's Altar", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 3, description = "Enter Portal.", type = "Interact", target_name = "Portal", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["What Lies Ahead"] = {
+        name = "What Lies Ahead",
+        steps = {
+            { index = 1, description = "Enter Throne of Hatred.", type = "Move", target_name = "Lilith", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Defeat Lilith.", type = "Interact", target_name = "Lilith", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 3, description = "Speak with Lorath.", type = "Interact", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+
+    -- EPILOGUE: From the Wound Spilled
+    ["Promises"] = {
+        name = "Promises",
+        steps = {
+            { index = 1, description = "Speak with Lorath in Chapel.", type = "Interact", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 3.0 },
+            { index = 2, description = "Defeat Iosef.", type = "Interact", target_name = "Iosef", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["A Heavy Burden"] = {
+        name = "A Heavy Burden",
+        steps = {
+            { index = 1, description = "Go to Horadric Vault.", type = "Move", target_name = "Letter", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
+            { index = 2, description = "Read Letter.", type = "Interact", target_name = "Letter", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
+        }
+    },
+    ["Legacy of the Horadrim"] = {
+        name = "Legacy of the Horadrim",
+        steps = {
+            { index = 1, description = "Go to Firebreak Manor.", type = "Move", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 10.0 },
             { index = 2, description = "Speak with Lorath.", type = "Interact", target_name = "Lorath", pos = vec3:new(0, 0, 0), range_threshold = 3.0 }
         }
     }
