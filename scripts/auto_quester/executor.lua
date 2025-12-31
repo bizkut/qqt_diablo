@@ -101,9 +101,13 @@ function executor.run_quest_logic(quest, step_index)
             local actor = get_actor_by_name(step.target_name)
             if actor then
                 -- Use global interaction function as verified
-                if loot_manager.interact_with_object(actor) then
-                    console.print("Interacted with " .. step.target_name)
-                    tracker.advance_step()
+                if loot_manager and loot_manager.interact_with_object then
+                    if loot_manager.interact_with_object(actor) then
+                        console.print("Interacted with " .. step.target_name)
+                        tracker.advance_step()
+                    end
+                else
+                    console.print("Error: loot_manager not available")
                 end
             else
                 console.print("At location, waiting for spawn: " .. step.target_name)
