@@ -3,30 +3,31 @@ local my_utility = require("my_utility/my_utility")
 local spell_data = require("my_utility/spell_data")
 local my_target_selector = require("my_utility/my_target_selector")
 
-local max_spell_range = 15.0
+local max_spell_range = 5.0
 local targeting_type = "melee"
 local menu_elements =
 {
     tree_tab            = my_utility.safe_tree_tab(1),
-    main_boolean        = my_utility.safe_checkbox(true, get_hash(my_utility.plugin_label .. "condemn_main_bool_base")),
-    targeting_mode      = my_utility.safe_combo_box(2, get_hash(my_utility.plugin_label .. "condemn_targeting_mode")),
+    main_boolean        = my_utility.safe_checkbox(true, get_hash(my_utility.plugin_label .. "zeal_main_bool_base")),
+    targeting_mode      = my_utility.safe_combo_box(0, get_hash(my_utility.plugin_label .. "zeal_targeting_mode")),
 
     advanced_tree       = my_utility.safe_tree_tab(2),
     priority_target     = my_utility.safe_checkbox(false,
-        get_hash(my_utility.plugin_label .. "condemn_priority_target")),
+        get_hash(my_utility.plugin_label .. "zeal_priority_target")),
     min_target_range    = my_utility.safe_slider_float(0, max_spell_range - 1, 0,
-        get_hash(my_utility.plugin_label .. "condemn_min_target_range")),
-    elites_only         = my_utility.safe_checkbox(false, get_hash(my_utility.plugin_label .. "condemn_elites_only")),
-    use_custom_cooldown = my_utility.safe_checkbox(false,
-        get_hash(my_utility.plugin_label .. "condemn_use_custom_cooldown")),
+        get_hash(my_utility.plugin_label .. "zeal_min_target_range")),
+    elites_only         = my_utility.safe_checkbox(false, get_hash(my_utility.plugin_label .. "zeal_elites_only")),
+    use_custom_cooldown = my_utility.safe_checkbox(false, get_hash(my_utility.plugin_label .. "zeal_use_custom_cooldown")),
     custom_cooldown_sec = my_utility.safe_slider_float(0.1, 5.0, 1.0,
-        get_hash(my_utility.plugin_label .. "condemn_custom_cooldown_sec")),
-    debug_mode          = my_utility.safe_checkbox(false, get_hash(my_utility.plugin_label .. "condemn_debug_mode")),
+        get_hash(my_utility.plugin_label .. "zeal_custom_cooldown_sec")),
+    debug_mode          = my_utility.safe_checkbox(false, get_hash(my_utility.plugin_label .. "zeal_debug_mode")),
 }
 
+local zeal_data = spell_data.zeal.data
+
 local function menu()
-    if menu_elements.tree_tab:push("Condemn") then
-        menu_elements.main_boolean:render("Enable Condemn", "")
+    if menu_elements.tree_tab:push("Zeal") then
+        menu_elements.main_boolean:render("Enable Zeal", "")
         if menu_elements.main_boolean:get() then
             menu_elements.targeting_mode:render("Targeting Mode", my_utility.targeting_modes_melee,
                 my_utility.targeting_mode_description)
@@ -57,7 +58,7 @@ local next_time_allowed_cast = 0;
 local function logics(target, target_selector_data)
     if not target then
         if menu_elements.debug_mode:get() then
-            my_utility.debug_print("[CONDEMN DEBUG] No target provided")
+            my_utility.debug_print("[ZEAL DEBUG] No target provided")
         end
         return false
     end;
@@ -68,19 +69,19 @@ local function logics(target, target_selector_data)
         if priority_target and my_utility.is_in_range(priority_target, max_spell_range) then
             target = priority_target
             if menu_elements.debug_mode:get() then
-                my_utility.debug_print("[CONDEMN DEBUG] Priority targeting enabled - using priority target: " ..
+                my_utility.debug_print("[ZEAL DEBUG] Priority targeting enabled - using priority target: " ..
                     (target:get_skin_name() or "Unknown"))
             end
         else
             if menu_elements.debug_mode:get() then
-                my_utility.debug_print("[CONDEMN DEBUG] No valid priority target in range, using original target")
+                my_utility.debug_print("[ZEAL DEBUG] No valid priority target in range, using original target")
             end
         end
     end
 
     if menu_elements.elites_only:get() and not target:is_elite() then
         if menu_elements.debug_mode:get() then
-            my_utility.debug_print("[CONDEMN DEBUG] Elites only mode - target is not elite")
+            my_utility.debug_print("[ZEAL DEBUG] Elites only mode - target is not elite")
         end
         return false
     end
@@ -89,38 +90,55 @@ local function logics(target, target_selector_data)
     local is_logic_allowed = my_utility.is_spell_allowed(
         menu_boolean,
         next_time_allowed_cast,
-        spell_data.condemn.spell_id);
+        spell_data.zeal.spell_id);
 
     if not is_logic_allowed then
         if menu_elements.debug_mode:get() then
-            my_utility.debug_print("[CONDEMN DEBUG] Logic not allowed - spell conditions not met")
+            my_utility.debug_print("[ZEAL DEBUG] Logic not allowed - spell conditions not met")
         end
         return false
     end;
 
-    if not my_utility.is_in_range(target, max_spell_range) or my_utility.is_in_range(target, menu_elements.min_target_range:get()) then
+    -- Check Faith cost
+    local local_player = get_local_player();
+    local current_faith = local_player:get_primary_resource_current();
+    if current_faith < spell_data.zeal.faith_cost then
         if menu_elements.debug_mode:get() then
-            my_utility.debug_print("[CONDEMN DEBUG] Target not in valid range")
+            my_utility.debug_print("[ZEAL DEBUG] Not enough Faith - required: " ..
+                spell_data.zeal.faith_cost .. ", current: " .. current_faith)
         end
         return false
     end
 
-    local cast_ok, delay = my_utility.try_cast_spell("condemn", spell_data.condemn.spell_id, menu_boolean,
+    if not my_utility.is_in_range(target, max_spell_range) or my_utility.is_in_range(target, menu_elements.min_target_range:get()) then
+        if menu_elements.debug_mode:get() then
+            my_utility.debug_print("[ZEAL DEBUG] Target not in valid range")
+        end
+        return false
+    end
+
+    local cast_ok, delay = my_utility.try_cast_spell("zeal", spell_data.zeal.spell_id, menu_boolean,
         next_time_allowed_cast, function()
-            return cast_spell.self(spell_data.condemn.spell_id, spell_data.condemn.cast_delay)
-        end, spell_data.condemn.cast_delay)
+            return cast_spell.target(target, spell_data.zeal.spell_id, spell_data.zeal.cast_delay, false)
+        end, spell_data.zeal.cast_delay)
 
     if cast_ok then
         local current_time = get_time_since_inject();
-        local cooldown = menu_elements.use_custom_cooldown:get() and menu_elements.custom_cooldown_sec:get() or
-            (delay or spell_data.condemn.cast_delay);
+        local cooldown = (delay or spell_data.zeal.cast_delay);
+
+        if menu_elements.use_custom_cooldown:get() then
+            cooldown = menu_elements.custom_cooldown_sec:get()
+        end
+
         next_time_allowed_cast = current_time + cooldown;
-        my_utility.debug_print("Cast Condemn");
-        return true, cooldown;
-    end;
+
+        my_utility.debug_print("Cast Zeal - Target: " ..
+            my_utility.targeting_modes[menu_elements.targeting_mode:get() + 1]);
+        return true, cooldown
+    end
 
     if menu_elements.debug_mode:get() then
-        my_utility.debug_print("[CONDEMN DEBUG] Cast failed")
+        my_utility.debug_print("[ZEAL DEBUG] Cast failed")
     end
     return false;
 end

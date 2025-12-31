@@ -2,29 +2,23 @@
 local my_utility = require("my_utility/my_utility")
 local spell_data = require("my_utility/spell_data")
 
-local max_spell_range = 15.0
 local menu_elements =
 {
     tree_tab            = my_utility.safe_tree_tab(1),
-    main_boolean        = my_utility.safe_checkbox(true,
-        get_hash(my_utility.plugin_label .. "holy_light_aura_main_bool_base")),
+    main_boolean        = my_utility.safe_checkbox(true, get_hash(my_utility.plugin_label .. "rally_main_bool_base")),
 
     advanced_tree       = my_utility.safe_tree_tab(2),
-    cast_on_cooldown    = my_utility.safe_checkbox(false,
-        get_hash(my_utility.plugin_label .. "holy_light_aura_cast_on_cooldown")),
+    cast_on_cooldown    = my_utility.safe_checkbox(false, get_hash(my_utility.plugin_label .. "rally_cast_on_cooldown")),
     use_custom_cooldown = my_utility.safe_checkbox(false,
-        get_hash(my_utility.plugin_label .. "holy_light_aura_use_custom_cooldown")),
+        get_hash(my_utility.plugin_label .. "rally_use_custom_cooldown")),
     custom_cooldown_sec = my_utility.safe_slider_float(0.1, 10.0, 0.1,
-        get_hash(my_utility.plugin_label .. "holy_light_aura_custom_cooldown_sec")),
-    max_cast_range      = my_utility.safe_slider_float(1.0, 15.0, 5.0,
-        get_hash(my_utility.plugin_label .. "holy_light_aura_max_cast_range")),
-    debug_mode          = my_utility.safe_checkbox(false,
-        get_hash(my_utility.plugin_label .. "holy_light_aura_debug_mode")),
+        get_hash(my_utility.plugin_label .. "rally_custom_cooldown_sec")),
+    debug_mode          = my_utility.safe_checkbox(false, get_hash(my_utility.plugin_label .. "rally_debug_mode")),
 }
 
 local function menu()
-    if menu_elements.tree_tab:push("Holy Light Aura") then
-        menu_elements.main_boolean:render("Enable Holy Light Aura", "")
+    if menu_elements.tree_tab:push("Rally") then
+        menu_elements.main_boolean:render("Enable Rally", "")
         if menu_elements.main_boolean:get() then
             if menu_elements.advanced_tree:push("Advanced Settings") then
                 menu_elements.cast_on_cooldown:render("Cast on Cooldown",
@@ -35,7 +29,6 @@ local function menu()
                     menu_elements.custom_cooldown_sec:render("Custom Cooldown (sec)",
                         "Set the custom cooldown in seconds", 2)
                 end
-                menu_elements.max_cast_range:render("Max Cast Range", "Only cast when enemies are within this range", 1)
                 menu_elements.debug_mode:render("Debug Mode", "Enable debug logging for troubleshooting")
                 menu_elements.advanced_tree:pop()
             end
@@ -52,60 +45,61 @@ local function logics()
     local is_logic_allowed = my_utility.is_spell_allowed(
         menu_boolean,
         next_time_allowed_cast,
-        spell_data.holy_light_aura.spell_id);
+        spell_data.rally.spell_id);
 
     if not is_logic_allowed then
         if menu_elements.debug_mode:get() then
-            my_utility.debug_print("[HOLY LIGHT AURA DEBUG] Logic not allowed - spell conditions not met")
-        end
-        return false
-    end;
-
-    -- Check if there are enemies within the specified range
-    local enemy_count = my_utility.enemy_count_simple(menu_elements.max_cast_range:get());
-    if enemy_count == 0 then
-        if menu_elements.debug_mode:get() then
-            my_utility.debug_print("[HOLY LIGHT AURA DEBUG] No enemies within range")
+            my_utility.debug_print("[RALLY DEBUG] Logic not allowed - spell conditions not met")
         end
         return false
     end;
 
     -- Check cast on cooldown option via helper
-    local maintained, mdelay = my_utility.try_maintain_buff("holy_light_aura", spell_data.holy_light_aura.spell_id,
-        menu_elements)
+    local maintained, mdelay = my_utility.try_maintain_buff("rally", spell_data.rally.spell_id, menu_elements)
     if maintained ~= nil then
         if maintained then
             local current_time = get_time_since_inject();
             local cd = menu_elements.use_custom_cooldown:get() and menu_elements.custom_cooldown_sec:get() or mdelay
             next_time_allowed_cast = current_time + cd;
-            my_utility.debug_print("Cast Holy Light Aura (On Cooldown)");
+            my_utility.debug_print("Cast Rally (On Cooldown)");
             return true, cd;
         end
         if menu_elements.debug_mode:get() then
-            my_utility.debug_print("[HOLY LIGHT AURA DEBUG] Cast on cooldown failed")
+            my_utility.debug_print("[RALLY DEBUG] Cast on cooldown failed")
         end
         return false
     end
 
-    local cast_ok, delay = my_utility.try_cast_spell("holy_light_aura", spell_data.holy_light_aura.spell_id, menu_boolean,
+    -- Original logic for situational casting
+    local current_time = get_time_since_inject()
+    local last_cast = my_utility.get_last_cast_time("rally")
+
+    -- Don't cast if we cast it less than 6 seconds ago (Duration is 8s)
+    if current_time < last_cast + 6.0 then
+        if menu_elements.debug_mode:get() then
+            my_utility.debug_print("[RALLY DEBUG] Too soon since last cast")
+        end
+        return false
+    end
+
+    local cast_ok, delay = my_utility.try_cast_spell("rally", spell_data.rally.spell_id, menu_boolean,
         next_time_allowed_cast,
-        function() return cast_spell.self(spell_data.holy_light_aura.spell_id, spell_data.holy_light_aura.cast_delay) end,
-        spell_data.holy_light_aura.cast_delay)
+        function() return cast_spell.self(spell_data.rally.spell_id, spell_data.rally.cast_delay) end,
+        spell_data.rally.cast_delay)
 
     if cast_ok then
-        local current_time = get_time_since_inject();
-        local cooldown = (delay or spell_data.holy_light_aura.cast_delay);
+        local cooldown = (delay or spell_data.rally.cast_delay);
 
         if menu_elements.use_custom_cooldown:get() then
             cooldown = menu_elements.custom_cooldown_sec:get()
         end
 
-        my_utility.debug_print("Cast Holy Light Aura");
+        my_utility.debug_print("Cast Rally");
         return true, cooldown;
     end;
 
     if menu_elements.debug_mode:get() then
-        my_utility.debug_print("[HOLY LIGHT AURA DEBUG] Cast failed")
+        my_utility.debug_print("[RALLY DEBUG] Cast failed")
     end
     return false;
 end
