@@ -74,20 +74,6 @@ on_update(function ()
         return;
     end
 
-    -- Priority 1: Maintain Auras (Buffs)
-    if spells.holy_light_aura.logics() then
-        cast_end_time = current_time + 0.2;
-        return;
-    end
-    if spells.fanaticism_aura.logics() then
-        cast_end_time = current_time + 0.2;
-        return;
-    end
-    if spells.defiance_aura.logics() then
-        cast_end_time = current_time + 0.2;
-        return;
-    end
-
     local screen_range = 16.0;
     local player_position = get_player_position();
 
@@ -151,7 +137,7 @@ on_update(function ()
         return;
     end
 
-    -- Priority 2: Maintain Arbiter Form / Attack
+    -- Priority 1: Maintain Arbiter Form / Attack
     -- "Use Arbiter of Justice, Falling Star or Condemn in rotation to remain in Arbiter form."
 
     if spells.arbiter_of_justice.logics(best_target) then
@@ -165,6 +151,21 @@ on_update(function ()
     end
 
     if spells.condemn.logics() then
+        cast_end_time = current_time + 0.2;
+        return;
+    end
+
+    -- Priority 2: Maintain Auras (Buffs)
+    -- "Activate Holy Light Aura, Fanaticism Aura, and Defiance Aura as often as possible."
+    if spells.holy_light_aura.logics() then
+        cast_end_time = current_time + 0.2;
+        return;
+    end
+    if spells.fanaticism_aura.logics() then
+        cast_end_time = current_time + 0.2;
+        return;
+    end
+    if spells.defiance_aura.logics() then
         cast_end_time = current_time + 0.2;
         return;
     end
